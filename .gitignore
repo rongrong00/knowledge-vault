@@ -1,0 +1,13 @@
+# Obsidian per-machine state — safe to ignore if you version this vault
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.trash/
+.DS_Store
+.obsidian/*.bak
+.obsidian/*.bak.*
+
+# Community plugins are per-machine; the cluster has no Obsidian at all.
+# Keeping them out avoids a 26MB blob in every clone.
+.obsidian/plugins/
+.obsidian/workspace*.json

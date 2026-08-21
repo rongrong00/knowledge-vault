@@ -1,0 +1,27 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    { "query": "path:Concepts",   "color": { "a": 1, "rgb": 8154623 } },
+    { "query": "path:Literature", "color": { "a": 1, "rgb": 5431378 } },
+    { "query": "path:Projects",   "color": { "a": 1, "rgb": 14701138 } },
+    { "query": "path:Maps",       "color": { "a": 1, "rgb": 16750899 } },
+    { "query": "path:Log",        "color": { "a": 1, "rgb": 7827820 } }
+  ],
+  "collapse-display": false,
+  "showArrow": true,
+  "textFadeMultiplier": -0.7,
+  "nodeSizeMultiplier": 1.2,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0.35,
+  "repelStrength": 12,
+  "linkStrength": 0.9,
+  "linkDistance": 220,
+  "scale": 1
+}

@@ -1,0 +1,12 @@
+{
+  "git_autosync": true,
+  "min_prompts": 1,
+  "ignore_cwd_patterns": [],
+  "redact_patterns": [
+    "(?i)\\b(sk-[A-Za-z0-9_\\-]{16,})",
+    "(?i)\\b(gh[pousr]_[A-Za-z0-9]{16,})",
+    "(?i)(api[_-]?key\\s*[=:]\\s*)\\S+",
+    "(?i)(password\\s*[=:]\\s*)\\S+",
+    "(?i)(token\\s*[=:]\\s*)\\S+"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "useMarkdownLinks": false,
+  "newLinkFormat": "shortest",
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "Attachments",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Concepts",
+  "showUnsupportedFiles": false,
+  "promptDelete": false,
+  "trashOption": "local",
+  "livePreview": true,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showFrontmatter": true,
+  "readableLineLength": true,
+  "spellcheck": true
+}
