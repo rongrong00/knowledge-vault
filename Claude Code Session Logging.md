@@ -38,11 +38,21 @@ notes. That's the whole trick.
 The vault is already a git repo with an initial commit on `main`. Create an **empty
 private** repo on GitHub named `knowledge-vault` (no README, no .gitignore), then:
 
+The remote is already set to `https://github.com/rongrong00/knowledge-vault.git`.
+There are no SSH keys on this Mac, so HTTPS is the path of least resistance:
+
 ```bash
+brew install gh          # skip if you already have it
+gh auth login            # browser flow; also stores git credentials
 cd ~/Documents/Obsidian\ Vault
-git remote add origin git@github.com:YOUR-USERNAME/knowledge-vault.git
+gh repo create rongrong00/knowledge-vault --private
 git push -u origin main
 ```
+
+Without `gh`: create the empty private repo in the browser, then push and paste a
+[fine-grained personal access token](https://github.com/settings/tokens) as the
+password when git asks. `git config --global credential.helper osxkeychain` will
+keep you from retyping it.
 
 > [!warning] Make it private
 > Session notes contain your prompts and file paths. The logger redacts obvious
@@ -61,7 +71,7 @@ sessions logged. The hook doesn't care when it arrives; register it now or later
 
 ```bash
 ssh you@login.rc.fas.harvard.edu
-git clone git@github.com:YOUR-USERNAME/knowledge-vault.git ~/knowledge-vault
+git clone https://github.com/rongrong00/knowledge-vault.git ~/knowledge-vault
 echo cannon > ~/.claude-vault-machine       # see note below
 bash ~/knowledge-vault/_bin/install-claude-hook.sh
 ```
@@ -79,7 +89,7 @@ bash ~/knowledge-vault/_bin/install-claude-hook.sh
 printf 'Host github.com\n  Hostname ssh.github.com\n  Port 443\n' >> ~/.ssh/config
 
 # Option B — HTTPS with a fine-grained personal access token
-git remote set-url origin https://github.com/YOUR-USERNAME/knowledge-vault.git
+git remote set-url origin https://github.com/rongrong00/knowledge-vault.git
 git config credential.helper 'store --file ~/.git-credentials-vault'
 ```
 
