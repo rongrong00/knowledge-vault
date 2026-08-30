@@ -184,9 +184,33 @@ say ""
 say "Self-test:"
 "$PY" "$VAULT/_bin/claude-session-log.py" --self-test | tail -3 | sed 's/^/  /'
 
-MACHINE="$(hostname -s 2>/dev/null || echo unknown)"
+# Report the name the LOGGER will use, not just the hostname — they differ whenever
+# an override is set, and on a cluster the hostname is the wrong answer entirely.
+HOST="$(hostname -s 2>/dev/null || echo unknown)"
+if [ -n "${CLAUDE_VAULT_MACHINE:-}" ]; then
+  MACHINE="$CLAUDE_VAULT_MACHINE"; SRC="\$CLAUDE_VAULT_MACHINE"
+elif [ -s "$HOME/.claude-vault-machine" ]; then
+  MACHINE="$(head -1 "$HOME/.claude-vault-machine" | tr -d '[:space:]')"; SRC="~/.claude-vault-machine"
+else
+  MACHINE="$HOST"; SRC="hostname"
+fi
+
 say ""
-say "Installed on '$MACHINE'."
+say "Installed. Sessions here will be tagged machine: $MACHINE  (from $SRC)"
+
+if [ "$SRC" = "hostname" ]; then
+  case "$HOST" in
+    *login*|*node*|*gpu*|holy*|bos*|compute*|batch*|n[0-9]*|c[0-9]*)
+      say ""
+      say "  !! '$HOST' looks like a cluster node, and no machine name is pinned."
+      say "     Every node you land on would become a separate 'machine' in the vault."
+      say "     Fix it once, no reinstall needed:"
+      say ""
+      say "         echo cannon > ~/.claude-vault-machine"
+      say ""
+      ;;
+  esac
+fi
 say ""
 say "  vault    $VAULT"
 say "  notes    $VAULT/Log/Sessions/"
