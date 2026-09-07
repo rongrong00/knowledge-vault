@@ -156,8 +156,31 @@ cd <vault> && git log --oneline -3 && git status
 |---|---|---|
 | `git_autosync` | `true` | Commit and push after each session. `false` = write notes only |
 | `min_prompts` | `1` | Skip sessions with fewer real prompts than this |
+| `only_cwd_patterns` | research roots | Regexes; if non-empty, **only** matching directories are logged |
 | `ignore_cwd_patterns` | `[]` | Regexes; sessions in matching directories are never logged |
 | `redact_patterns` | 5 patterns | Applied to prompt text before writing |
+
+### Research-only logging
+
+The vault takes study and research and nothing else (see [[README]]). `only_cwd_patterns`
+enforces that at the source: a session is logged only if its working directory matches one
+of the research roots. Everything else — the Desktop, the home directory, an afternoon
+fixing your mouse driver — never becomes a note.
+
+It **fails closed**. An allowlist that matches nothing logs nothing, which is the right
+direction for a filter whose job is keeping things out. Two consequences worth knowing:
+
+- **Adding a new research project means adding its path here**, or its sessions go
+  unlogged and you won't be told.
+- **The config is shared over git**, so these patterns apply on every machine. `^/n/[^/]+/`
+  is the Cannon rule — it logs everything under the cluster filesystem, on the assumption
+  that what you do on Cannon is research by definition.
+
+> [!warning] A directory can't judge a topic
+> The filter matches paths, not subject matter. A personal conversation held *inside* a
+> research directory still gets logged in full. For that, use the per-session escape hatch
+> below — or simply hold those conversations somewhere outside the research roots, which
+> needs no discipline at all.
 
 Per-session escape hatch — log nothing for one session:
 
@@ -165,7 +188,8 @@ Per-session escape hatch — log nothing for one session:
 CLAUDE_VAULT_LOG=0 claude
 ```
 
-Skip a whole tree by adding to `ignore_cwd_patterns`, e.g. `"/private-research/"`.
+Skip a tree that would otherwise be allowed by adding to `ignore_cwd_patterns` — it is
+checked after the allowlist, so a denial always wins.
 
 ## Uninstall
 

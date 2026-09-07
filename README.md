@@ -25,6 +25,31 @@ Start at [[Home]].
 
 New notes default to `Concepts/`. Move them if they belong elsewhere.
 
+## What earns a note
+
+One question decides it: **will future-you need this, in a context you can't predict
+now?**
+
+That rules in the durable and rules out the retrievable. If it's one search away from
+its source — an abstract, a library's API, a constant on Wikipedia — copying it in is
+busywork. What earns a note is the thing that lived only in your head: the mechanism as
+*you* understand it, the reason a choice was made, the assumption doing the quiet work.
+
+**This vault is for study and research.** Physics, astronomy, mathematics, methods, the
+papers, the projects, and the log of doing them. Nothing else goes in — not personal
+life, not admin, not tooling you fixed once and will never think about again.
+
+| Belongs | Doesn't |
+|---|---|
+| A mechanism you've had to re-derive twice | Anything the code or the paper already records |
+| A method and where it breaks | Raw data and generated output |
+| Why you abandoned an approach that looked right | Bibliographic data alone — that's Zotero's job |
+| A source you actually engaged with | Papers you merely intend to read (use `#todo`) |
+| What you ran, what broke, what surprised you | Personal, financial, medical, immigration |
+
+Write a concept note when you *understand* the thing, not when you first meet it — a
+note written from confusion stays confusing.
+
 ## The five conventions
 
 **1. One concept per note.** `Spin Temperature` is a note. `Notes on radio astronomy`

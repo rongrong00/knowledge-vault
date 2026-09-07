@@ -15,10 +15,12 @@ created: 2026-08-21
 
 - [[MOC - Astrophysics]]
 - [[MOC - Sessions]] — what I did, on which machine
+- [[MOC - CGF 2026]] — conference notes, Garching July 2026
 
 ## Currently thinking about
 
 - [[21 cm Line]]
+- [[Resolution comparison]] — are TNG–Lumina disk-size differences physical or numerical?
 
 ## Open questions
 

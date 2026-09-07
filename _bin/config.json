@@ -1,6 +1,12 @@
 {
   "git_autosync": true,
   "min_prompts": 1,
+  "only_cwd_patterns": [
+    "/Desktop/CosmoSim(/|$)",
+    "/Documents/Obsidian Vault(/|$)",
+    "/knowledge-vault(/|$)",
+    "^/n/[^/]+/"
+  ],
   "ignore_cwd_patterns": [],
   "redact_patterns": [
     "(?i)\\b(sk-[A-Za-z0-9_\\-]{16,})",

@@ -47,6 +47,7 @@ def load_config():
     defaults = {
         "git_autosync": True,
         "min_prompts": 1,          # skip sessions with fewer real prompts than this (0 = log even empty ones)
+        "only_cwd_patterns": [],   # regexes; if non-empty, ONLY matching working dirs are logged
         "ignore_cwd_patterns": [], # regexes; matching working dirs are never logged
         "redact_patterns": [       # applied to prompt text before it is written
             r"(?i)\b(sk-[A-Za-z0-9_\-]{16,})",
@@ -379,6 +380,21 @@ def main():
         return 0
 
     cwd = payload.get("cwd") or ""
+    allow = cfg.get("only_cwd_patterns") or []
+    if allow:
+        # Fails closed: an allowlist that matches nothing logs nothing, which is the
+        # safe direction for a filter whose job is keeping content out.
+        matched = False
+        for pat in allow:
+            try:
+                if re.search(pat, cwd):
+                    matched = True
+                    break
+            except Exception:
+                continue
+        if not matched:
+            return 0
+
     for pat in cfg["ignore_cwd_patterns"]:
         try:
             if re.search(pat, cwd):
