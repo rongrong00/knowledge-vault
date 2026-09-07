@@ -69,6 +69,18 @@ for e in ents:
 PYC
   fi
   say ""
+  say "last background sync:"
+  if [ -f "$VAULT/.sync.log" ]; then
+    tail -6 "$VAULT/.sync.log" | sed 's/^/  /'
+    if tail -40 "$VAULT/.sync.log" | grep -q 'FAILED'; then
+      say ""
+      say "  !! the most recent sync reported a FAILURE (see above)."
+      say "     Notes are safe locally but may not have reached GitHub."
+    fi
+  else
+    say "  (no sync has run yet)"
+  fi
+  say ""
   say "recent session notes:"
   ls -1t "$VAULT/Log/Sessions" 2>/dev/null | head -5 | sed 's/^/  /' || say "  (none yet)"
   exit 0

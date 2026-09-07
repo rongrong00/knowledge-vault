@@ -11,3 +11,6 @@
 # Keeping them out avoids a 26MB blob in every clone.
 .obsidian/plugins/
 .obsidian/workspace*.json
+
+# background sync log, per machine
+.sync.log

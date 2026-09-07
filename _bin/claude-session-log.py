@@ -37,7 +37,11 @@ CONFIG = VAULT / "_bin" / "config.json"
 MAX_PROMPT_CHARS = 240
 MAX_PROMPTS_SHOWN = 40
 MAX_FILES_SHOWN = 40
-EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit", "str_replace_editor"}
+EDIT_TOOLS = {"Edit", "Write", "NotebookEdit", "MultiEdit", "str_replace_editor",
+              "create_file", "edit_file", "write_file", "apply_patch", "Update"}
+PATH_KEYS = ("file_path", "notebook_path", "path", "filePath", "target_file", "filename")
+WRITE_KEYS = ("content", "new_string", "new_str", "edits", "replacements", "patch",
+              "new_source", "contents")
 
 
 # --------------------------------------------------------------------------- utils
@@ -187,8 +191,10 @@ def parse_transcript(path):
                 name = b.get("name") or "?"
                 out["tools"][name] = out["tools"].get(name, 0) + 1
                 inp = b.get("input") if isinstance(b.get("input"), dict) else {}
-                fp = inp.get("file_path") or inp.get("notebook_path") or inp.get("path")
-                if name in EDIT_TOOLS and isinstance(fp, str) and fp not in seen_files:
+                fp = next((inp[k] for k in PATH_KEYS
+                           if isinstance(inp.get(k), str) and inp[k]), None)
+                looks_like_write = name in EDIT_TOOLS or any(k in inp for k in WRITE_KEYS)
+                if looks_like_write and isinstance(fp, str) and fp not in seen_files:
                     seen_files.add(fp)
                     out["files"].append(fp)
                 if name == "Bash" and isinstance(inp.get("command"), str):
@@ -215,21 +221,47 @@ def git_info(cwd):
     return info
 
 
-def git_sync_detached(vault):
-    """Fork a fully detached child to pull/commit/push, so session exit never waits."""
-    script = (
-        'cd "$1" || exit 0; '
-        'git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0; '
-        'git add -A >/dev/null 2>&1; '
-        'git diff --cached --quiet && exit 0; '
-        'git commit -m "session log: $(hostname -s) $(date +%Y-%m-%dT%H:%M)" >/dev/null 2>&1; '
-        'git remote get-url origin >/dev/null 2>&1 || exit 0; '
-        'git pull --rebase --autostash origin "$(git rev-parse --abbrev-ref HEAD)" >/dev/null 2>&1; '
-        'git push origin HEAD >/dev/null 2>&1; '
-    )
+def post_session_detached(vault):
+    """Fork a fully detached child: build the daily brief if this machine is the
+    designated one, then commit and push. Session exit never waits on any of it.
+
+    Everything is appended to <vault>/.sync.log (gitignored). The sync used to be
+    entirely silent, so a failed push looked exactly like a successful one and notes
+    could pile up locally for days. Now there is always a record.
+
+    A failed rebase is aborted rather than left half-applied - a background job must
+    never strand the repo mid-rebase where your next interactive git command breaks.
+    """
+    script = r"""
+V="$1"; PY="$2"; LOG="$V/.sync.log"
+cd "$V" 2>/dev/null || exit 0
+echo "--- $(date +%Y-%m-%dT%H:%M:%S) $(hostname -s 2>/dev/null)" >> "$LOG"
+
+[ -f "$V/_bin/daily-brief.py" ] && "$PY" "$V/_bin/daily-brief.py" --auto >> "$LOG" 2>&1
+
+command -v git >/dev/null 2>&1 || { echo "git not on PATH in hook env" >> "$LOG"; exit 0; }
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || { echo "not a git repo" >> "$LOG"; exit 0; }
+git add -A >> "$LOG" 2>&1
+if git diff --cached --quiet 2>/dev/null; then echo "nothing to commit" >> "$LOG"; exit 0; fi
+git commit -m "session log: $(hostname -s 2>/dev/null) $(date +%Y-%m-%dT%H:%M)" >> "$LOG" 2>&1
+git remote get-url origin >/dev/null 2>&1 || { echo "committed locally; no remote" >> "$LOG"; exit 0; }
+BR="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+if ! git pull --rebase --autostash origin "$BR" >> "$LOG" 2>&1; then
+  git rebase --abort >> "$LOG" 2>&1
+  echo "PULL FAILED -- rebase aborted, repo left clean, nothing pushed" >> "$LOG"
+  exit 0
+fi
+if git push origin HEAD >> "$LOG" 2>&1; then
+  echo "pushed OK" >> "$LOG"
+else
+  echo "PUSH FAILED -- check credentials; notes are committed locally only" >> "$LOG"
+fi
+tail -n 400 "$LOG" > "$LOG.trim" 2>/dev/null && mv "$LOG.trim" "$LOG" 2>/dev/null
+exit 0
+"""
     try:
         subprocess.Popen(
-            ["/bin/sh", "-c", script, "sh", str(vault)],
+            ["/bin/sh", "-c", script, "sh", str(vault), sys.executable],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL, start_new_session=True,
         )
@@ -366,6 +398,35 @@ def main():
     args = sys.argv[1:]
     if "--self-test" in args:
         return self_test()
+    if "--debug-transcript" in args:
+        # Print the tool names and input keys actually present, so a format change
+        # can be diagnosed from real data instead of guessed at.
+        try:
+            path = args[args.index("--debug-transcript") + 1]
+        except Exception:
+            print("usage: --debug-transcript <path-to.jsonl>", file=sys.stderr)
+            return 2
+        tools, keys, roles, types = {}, {}, {}, {}
+        for entry in iter_lines(path):
+            if not isinstance(entry, dict):
+                continue
+            types[entry.get("type")] = types.get(entry.get("type"), 0) + 1
+            msg = entry.get("message") if isinstance(entry.get("message"), dict) else entry
+            r = role_of(entry)
+            roles[r] = roles.get(r, 0) + 1
+            for b in blocks_of(msg):
+                if b.get("type") == "tool_use":
+                    n = b.get("name") or "?"
+                    tools[n] = tools.get(n, 0) + 1
+                    inp = b.get("input") if isinstance(b.get("input"), dict) else {}
+                    for k in inp:
+                        keys.setdefault(n, set()).add(k)
+        print("top-level types:", types)
+        print("roles:", roles)
+        print("tool_use names:", tools or "NONE FOUND - blocks are shaped differently")
+        for n in sorted(keys):
+            print(f"  {n} input keys: {sorted(keys[n])}")
+        return 0
 
     cfg = load_config()
     try:
@@ -423,7 +484,7 @@ def main():
         return 0
 
     if cfg["git_autosync"]:
-        git_sync_detached(VAULT)
+        post_session_detached(VAULT)
     return 0
 
 
