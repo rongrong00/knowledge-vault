@@ -8,7 +8,7 @@ updated: 2026-09-02
 ---
 # TNG-Cluster vs IllustrisTNG
 
-Up: [[MOC - CGF 2026]] · Related: [[Simulation landscape]], [[Resolution comparison]], [[Calibration and tuning]]
+Up: [[MOC - CGF 2026]] · Reference card: [[TNG-Cluster]] · Related: [[Simulation landscape]], [[Resolution comparison]], [[Calibration and tuning]]
 
 ---
 
